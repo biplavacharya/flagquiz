@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashvik's Flag Quiz</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --primary-hover: #357ABD;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .home-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+            display: none; /* Hidden on home screen */
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .home-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .content {
+            padding: 30px 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Screen 1: Continent Selection */
+        #home-screen {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #home-screen h2 {
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-size: 1.2rem;
+        }
+
+        .continent-btn {
+            background-color: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .continent-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Screen 2: Quiz */
+        #quiz-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flag-container {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            background-color: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .flag-container:hover {
+            transform: scale(1.02);
+        }
+
+        .flag-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            transition: opacity 0.3s;
+        }
+
+        #country-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            min-height: 36px;
+            margin-bottom: 25px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+            transition: all 0.2s;
+        }
+
+        .next-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.6);
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <button class="home-btn" id="home-btn" onclick="goHome()" aria-label="Home">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+            </button>
+            <h1>Ashvik's Flag Quiz</h1>
+        </header>
+
+        <div class="content">
+            
+            <!-- Loading Screen -->
+            <div id="loading-screen">
+                <div class="spinner"></div>
+                <p>Loading flags from around the world...</p>
+            </div>
+
+            <!-- Home Screen -->
+            <div id="home-screen" style="display: none;">
+                <h2>Choose a Continent</h2>
+                <button class="continent-btn" onclick="startQuiz('Africa')">Africa</button>
+                <button class="continent-btn" onclick="startQuiz('Americas')">Americas</button>
+                <button class="continent-btn" onclick="startQuiz('Asia')">Asia</button>
+                <button class="continent-btn" onclick="startQuiz('Europe')">Europe</button>
+                <button class="continent-btn" onclick="startQuiz('Oceania')">Oceania</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quiz-screen">
+                <p style="margin-bottom: 15px; color: var(--text-muted);" id="continent-title"></p>
+                
+                <div class="flag-container" onclick="revealCountry()">
+                    <img id="flag-image" src="" alt="Country Flag">
+                    <div class="click-hint" id="click-hint">Tap flag to reveal country</div>
+                </div>
+                
+                <div id="country-name">Country Name</div>
+                
+                <button class="next-btn" onclick="nextFlag()">Next Flag</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let allCountries = [];
+        let currentFilteredCountries = [];
+        let currentCountry = null;
+
+        // Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const homeScreen = document.getElementById('home-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const homeBtn = document.getElementById('home-btn');
+        const flagImage = document.getElementById('flag-image');
+        const countryNameDisplay = document.getElementById('country-name');
+        const continentTitle = document.getElementById('continent-title');
+        const clickHint = document.getElementById('click-hint');
+
+        // Fetch data from RestCountries API on load
+        async function fetchCountries() {
+            try {
+                const response = await fetch('https://restcountries.com/v3.1/all?fields=name,region,flags');
+                const data = await response.json();
+                
+                // Filter out entries without a proper flag or name
+                allCountries = data.filter(country => country.flags && country.flags.png && country.name.common);
+                
+                // Hide loading, show home
+                loadingScreen.style.display = 'none';
+                homeScreen.style.display = 'flex';
+            } catch (error) {
+                loadingScreen.innerHTML = '<p style="color: red;">Error loading flags. Please check your internet connection and refresh.</p>';
+                console.error('Error fetching countries:', error);
+            }
+        }
+
+        // Switch to Quiz view
+        function startQuiz(region) {
+            currentFilteredCountries = allCountries.filter(country => country.region === region);
+            
+            if(currentFilteredCountries.length === 0) {
+                alert("No countries found for this region!");
+                return;
+            }
+
+            continentTitle.textContent = `Region: ${region}`;
+            homeScreen.style.display = 'none';
+            quizScreen.style.display = 'flex';
+            homeBtn.style.display = 'flex';
+            
+            nextFlag();
+        }
+
+        // Get a random flag
+        function nextFlag() {
+            // Pick a random country from the filtered list
+            const randomIndex = Math.floor(Math.random() * currentFilteredCountries.length);
+            currentCountry = currentFilteredCountries[randomIndex];
+
+            // Update UI
+            flagImage.src = currentCountry.flags.svg || currentCountry.flags.png;
+            countryNameDisplay.textContent = currentCountry.name.common;
+            
+            // Hide the name and show the hint
+            countryNameDisplay.style.opacity = '0';
+            clickHint.style.bottom = '10px';
+            clickHint.style.opacity = '1';
+        }
+
+        // Reveal the country name
+        function revealCountry() {
+            if (countryNameDisplay.style.opacity === '0') {
+                countryNameDisplay.style.opacity = '1';
+                clickHint.style.opacity = '0';
+                clickHint.style.bottom = '-30px';
+            }
+        }
+
+        // Return to Home view
+        function goHome() {
+            quizScreen.style.display = 'none';
+            homeScreen.style.display = 'flex';
+            homeBtn.style.display = 'none';
+        }
+
+        // Initialize App
+        window.onload = fetchCountries;
+    </script>
+</body>
+</html>
